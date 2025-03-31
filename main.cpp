@@ -1,17 +1,15 @@
 #include "stdio.h"
-// #define ETL_NO_STL
 #include "etl/platform.h"
-// #include <gtest/gtest.h> // Wanted to use GTest for Unit-Tests, but it gives me compiler errors, because initializer list is defined in both ETL, as well as GTest. Couldn't figure this out due to time budget.
+#include <gtest/gtest.h>
 #include "inc/PacketBuffer.hpp"
 #include "etl/circular_buffer.h"
-#include "inc/Receiver.hpp"
 #include <iostream>
 // #include "platform.h" // This took me like 30 mins to figure out, see https://github.com/ETLCPP/etl/issues/231
 
-void testCase1()
+TEST(PacketBufferTest, Normal)
 {
     /*
-     * Test-Case 1: "Normal use case"
+     * EXPECT-Case 1: "Normal use case"
      */
     Packet packet1;
     packet1.data[0] = 1;
@@ -36,33 +34,25 @@ void testCase1()
 
     Packet extractedPacket;
     packetBuffer.extract(extractedPacket);
-    // printf("Extracted Packet: %d %d %d\n", extractedPacket.data[0], extractedPacket.data[1], extractedPacket.data[2]);
-    assert(extractedPacket.data[0] == 1);
-    assert(extractedPacket.data[1] == 2);
-    assert(extractedPacket.data[2] == 3);
+    EXPECT_EQ(extractedPacket.data[0], 1);
+    EXPECT_EQ(extractedPacket.data[1], 2);
+    EXPECT_EQ(extractedPacket.data[2], 3);
 
     packetBuffer.extract(extractedPacket);
-    // printf("Extracted Packet: %d %d %d\n", extractedPacket.data[0], extractedPacket.data[1], extractedPacket.data[2]);
-    assert(extractedPacket.data[0] == 4);
-    assert(extractedPacket.data[1] == 5);
-    assert(extractedPacket.data[2] == 6);
+    EXPECT_EQ(extractedPacket.data[0], 4);
+    EXPECT_EQ(extractedPacket.data[1], 5);
+    EXPECT_EQ(extractedPacket.data[2], 6);
 
     packetBuffer.extract(extractedPacket);
-    // printf("Extracted Packet: %d %d %d\n", extractedPacket.data[0], extractedPacket.data[1], extractedPacket.data[2]);
-    assert(extractedPacket.data[0] == 7);
-    assert(extractedPacket.data[1] == 8);
-    assert(extractedPacket.data[2] == 9);
-
-    // packetBuffer.extract(extractedPacket);
-    // printf("Extracted Packet: %d %d %d\n", extractedPacket.data[0], extractedPacket.data[1], extractedPacket.data[2]);
-    // packetBuffer.extract(extractedPacket);
-    // printf("Extracted Packet: %d %d %d\n", extractedPacket.data[0], extractedPacket.data[1], extractedPacket.data[2]);
+    EXPECT_EQ(extractedPacket.data[0], 7);
+    EXPECT_EQ(extractedPacket.data[1], 8);
+    EXPECT_EQ(extractedPacket.data[2], 9);
 }
 
-void testCase2()
+TEST(PacketBufferTest, AddToFull)
 {
     /*
-     * Test-Case 2: We try to add packets to a full buffer
+     * EXPECT-Case 2: We try to add packets to a full buffer
      */
     Packet packet1;
     packet1.data[0] = 1;
@@ -83,56 +73,42 @@ void testCase2()
     packet3.size = 3;
 
     PacketBuffer<2> packetBuffer;
-    assert(packetBuffer.append(packet1) == 0);
-    assert(packetBuffer.append(packet2) == 0);
-    assert(packetBuffer.append(packet3) == -1); // This packet should not be appendable
+    EXPECT_EQ(packetBuffer.append(packet1), 0);
+    EXPECT_EQ(packetBuffer.append(packet2), 0);
+    EXPECT_EQ(packetBuffer.append(packet3), -1); // This packet should not be appendable
 
     Packet extractedPacket;
     packetBuffer.extract(extractedPacket);
-    assert(extractedPacket.data[0] == 1);
-    assert(extractedPacket.data[1] == 2);
-    assert(extractedPacket.data[2] == 3);
+    EXPECT_EQ(extractedPacket.data[0], 1);
+    EXPECT_EQ(extractedPacket.data[1], 2);
+    EXPECT_EQ(extractedPacket.data[2], 3);
 
     packetBuffer.extract(extractedPacket);
-    assert(extractedPacket.data[0] == 4);
-    assert(extractedPacket.data[1] == 5);
-    assert(extractedPacket.data[2] == 6);
+    EXPECT_EQ(extractedPacket.data[0], 4);
+    EXPECT_EQ(extractedPacket.data[1], 5);
+    EXPECT_EQ(extractedPacket.data[2], 6);
 
     packetBuffer.extract(extractedPacket);
-    assert(extractedPacket.data[0] == 4);
-    assert(extractedPacket.data[1] == 5);
-    assert(extractedPacket.data[2] == 6);
+    EXPECT_EQ(extractedPacket.data[0], 4);
+    EXPECT_EQ(extractedPacket.data[1], 5);
+    EXPECT_EQ(extractedPacket.data[2], 6);
 }
 
-void testCase3()
+TEST(PacketBufferTest, ExtractFromEmpty)
 {
     /*
-     * Test-Case 3: We try to extract packets from an empty buffer
+     * EXPECT-Case 3: We try to extract packets from an empty buffer
      */
     PacketBuffer<2> packetBuffer;
     Packet extractedPacket;
-    assert(packetBuffer.extract(extractedPacket) == -1);
+    EXPECT_EQ(packetBuffer.extract(extractedPacket), -1);
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    // As the etl library seemingly collides with GTest we do a very lean basic Unit-Testing here.
+    // Init GTest
+    ::testing::InitGoogleTest(&argc, argv);
 
-    /*
-     * Test-Case 1: "Normal use case"
-     */
-    testCase1();
-    std::cout << "Testcase 1 passed! :)" << std::endl;
-
-    /*
-     * Test-Case 2: We try to add packets to a full buffer
-     */
-    testCase2();
-    std::cout << "Testcase 2 passed! :)" << std::endl;
-
-    /*
-     * Test-Case 3: We try to extract packets from an empty buffer
-     */
-    testCase3();
-    std::cout << "Testcase 3 passed! :)" << std::endl;
+    // Run the tests
+    return RUN_ALL_TESTS();
 }
