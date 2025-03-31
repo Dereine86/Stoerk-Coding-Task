@@ -104,6 +104,28 @@ TEST(PacketBufferTest, ExtractFromEmpty)
     EXPECT_EQ(packetBuffer.extract(extractedPacket), -1);
 }
 
+TEST(PacketBufferTest, PersistencyVerification)
+{
+    Packet *packet1 = new Packet();
+    packet1->data[0] = 1;
+    packet1->data[1] = 2;
+    packet1->data[2] = 3;
+    packet1->size = 3;
+    PacketBuffer<2> *packetBuffer = new PacketBuffer<2>();
+    packetBuffer->append(*packet1);
+
+    delete packet1;
+
+    Packet extractedPacket;
+    extractedPacket.data[0] = 7;
+    extractedPacket.data[1] = 8;
+    extractedPacket.data[2] = 9;
+    packetBuffer->extract(extractedPacket);
+    EXPECT_EQ(extractedPacket.data[0], 1);
+    EXPECT_EQ(extractedPacket.data[1], 2);
+    EXPECT_EQ(extractedPacket.data[2], 3);
+}
+
 int main(int argc, char **argv)
 {
     // Init GTest
